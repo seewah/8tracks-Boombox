@@ -1,0 +1,379 @@
+<html>
+	<head>
+		<style type="text/css">
+			body {
+  				min-width:420px;
+  				overflow-x:hidden;
+				font-family: helvetica, arial, sans-serif;
+				font-size: 11px;
+				color: #122C4B;
+			}
+			a {				
+				text-decoration: none;
+				color: #666;
+			}
+			a:hover {
+				text-decoration: underline;
+			}
+			form {
+				padding: 0;
+				margin: 0;
+			}
+			input {
+				-moz-border-radius: 4px; 
+				-webkit-border-radius: 4px; 
+				border: 1px solid #001a39;
+			}
+			select {
+				-moz-border-radius: 4px; 
+				-webkit-border-radius: 4px; 
+				border: 1px solid #001a39;
+			}
+			#header {
+				border-bottom: 1px solid #001a39;
+				height: 50px;
+			}
+			#logo {
+				float: left;
+				margin-top: 3px;
+			}
+			#search {
+				float: right;
+				margin-right: 18px;
+			}
+			#searchIn {
+				float: left;
+				padding-right: 5px;
+				padding-top: 5px;
+				font-size: 11px;
+			}
+			#searchForm {
+				float: left;
+			}
+			#searchBox {
+				background: url("search.png") 1px 1px no-repeat;
+				padding-left: 17px;
+				width: 120px;
+				font-size: 11px;
+			}
+			#sortBy {
+				width: 104px;
+				font-size: 11px;
+			}
+			#results {
+				padding-top: 10px;
+				clear: both;
+			}
+			#refresh {
+				width: 109px;
+				height: 20px;
+				background: url("refresh.gif") no-repeat;
+				float: right;
+				padding-left: 22px;
+				padding-top: 2px;
+				margin-top: 5px;
+				font-size: 12px;
+			}
+			#heading {
+				font-size: 22px;
+				font-weight: bold;
+			}
+			#mixes {
+				margin-top: 10px;
+			}
+			.mix {
+				clear: left;
+				width: 389px;				
+				-moz-border-radius: 6px; 
+				-webkit-border-radius: 6px; 
+				margin-bottom: 10px;
+				padding: 5px;
+				border: 1px solid #d5d5d5;
+			}
+			.mixThumbnail {
+				float: left;
+			}
+			.mixName {
+				font-size: 15px;
+				padding-bottom: 5px;
+				font-weight: bold;
+				margin-left: 62px;
+			}
+			.mixPub {
+				color: #999;
+				padding-bottom: 0px;
+				margin-left: 62px;
+			}
+			.mixDesc {				
+				padding-bottom: 5px;
+				margin-left: 62px;
+			}
+			.mixTags {
+				padding-bottom: 5px;
+				font-size: 10px;
+				color: #999;
+				margin-left: 62px;
+			}
+			.playbackOptions {
+				margin-left: 62px;
+				clear: left;
+				padding-left: 22px;
+				padding-top: 1px;
+				background: url("listen.png") no-repeat;
+			}
+			.mixPlayer {
+				padding-top: 5px;
+			}
+			.openInNewPageDiv {
+				padding: 5px;
+				padding-bottom: 0px;
+				display: none;
+			}
+			#more {
+				font-size: 12px;
+			}
+			#footer {
+				float: right;
+				margin-right: 18px;
+				padding-bottom: 5px;
+				font-size: 10px;
+				padding-top: 15px;
+			}
+		</style>
+		<script type="text/javascript" src="swfobject.js"></script>
+		<script type="text/javascript" src="jquery-1.4.1.min.js"></script>
+		<script type="text/javascript">
+
+			var LOCAL_STORAGE_KEY_SEARCH_STRING = "8tracksSearchString";
+			var LOCAL_STORAGE_KEY_SORT_BY = "8tracksSearchSortBy";
+
+			var req = new XMLHttpRequest();
+			var searchDefaultText = "by tag, artist or DJ";
+			var currentMixId = null;
+			var headingLatest = "Latest mixes from <a href=\"#\" title=\"Open 8tracks.com in a new tab\">8tracks</a>";
+			var headingSearchResults = "Search results from <a href=\"#\" title=\"Open 8tracks.com in a new tab\">8tracks</a>";
+			var spinningPic = $("<img src=\"working.gif\"/>");
+			var seeMoreDiv = $("<div id=\"more\"><a href=\"\" title=\"See more...\">See more...</a></div>");
+			var currentPage = 1;
+			var currentSearchParams = "";
+			var numberOfMixesDisplayed = 0;
+
+			function init() {
+
+				$("#searchBox").val(searchDefaultText);
+				$("#searchBox").focus(function() {
+					if ($(this).val() == searchDefaultText) {
+						$(this).val("");
+					}
+				});
+				$("#searchBox").blur(function() {
+					if ($(this).val() == "") {
+						$(this).val(searchDefaultText);
+					}
+				});
+				$("#searchForm form").submit(function(e) {
+					var searchString = $("#searchBox").val();
+					if (searchString != "" && searchString != searchDefaultText) {
+						clearResults();
+						var sortBy = $("#sortBy").val();
+						localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING] = searchString;
+						localStorage[LOCAL_STORAGE_KEY_SORT_BY] = sortBy;
+						getMixes("q=" + encodeURIComponent(searchString) + "&sort=" + sortBy, 1);
+					}
+					e.preventDefault();
+				});
+				$("#sortBy").change(function() {
+					$("#searchForm form").submit();
+				});
+				$("#refresh a").click(function(e) {
+					resetSearchPanel();
+					clearResults();
+					delete localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING];
+					delete localStorage[LOCAL_STORAGE_KEY_SORT_BY];
+					getMixes("", 1);
+					e.preventDefault();				
+				});
+				$("a#myTwitter").click(function(e) {
+					openUrlInBgTab("http://twitter.com/seewahcheng");
+					e.preventDefault();
+				});
+				$("a#my8tracks").click(function(e) {
+					openUrlInBgTab("http://8tracks.com/seewah");
+					e.preventDefault();
+				});
+				
+				if (localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING] == undefined || localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING] == "") {
+					getMixes("", 1);
+				} else {
+					$("#searchBox").val(localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING]);
+					if (localStorage[LOCAL_STORAGE_KEY_SORT_BY] != undefined && localStorage[LOCAL_STORAGE_KEY_SORT_BY] != "") {
+						$("#sortBy").val(localStorage[LOCAL_STORAGE_KEY_SORT_BY]);
+					}
+					$("#searchForm form").submit();
+				}
+			}
+
+			function openUrlInBgTab(url) {
+				chrome.tabs.create({"url": url, "selected": false});
+			}
+
+			function openUrlInNewWindow(url) {
+				chrome.windows.create({"url": url});
+			}
+
+			function resetSearchPanel() {
+				$("#searchBox").val(searchDefaultText);
+				$("#sortBy").val("recent");
+			}
+
+			function clearResults() {
+				$("#mixes").html("");
+				numberOfMixesDisplayed = 0;
+				currentMixId = null;
+			}
+
+			function getMixes(searchParams, page) {
+				currentPage = page;
+				currentSearchParams = searchParams;
+				$("#mixes").append(spinningPic);
+				$(seeMoreDiv).remove();
+				$("#heading").html(searchParams == "" ? headingLatest : headingSearchResults);
+				$("#heading a").click(function(e) {
+					openUrlInBgTab("http://8tracks.com");
+					e.preventDefault();
+				});
+				req.open("GET", "http://api.8tracks.com/mixes.xml?page=" + page + "&" + searchParams, true);
+				req.setRequestHeader("Authorization", "Basic S1BGUmZuQmJYQ0FKWUlhOmZlNDI2MzZjZThhMDkxNjYwN2QxYTg0MDc1YTNiZjc1MmFkNTZjMjU=");
+				req.onload = showResults;
+				req.send(null);
+			}
+
+			function showResults() {
+
+				$(spinningPic).remove();
+
+				var totalEntries = req.responseXML.getElementsByTagName("total-entries")[0].childNodes[0].nodeValue;
+  				var mixes = req.responseXML.getElementsByTagName("mix");
+
+  				for (var i = 0, mix; mix = mixes[i]; i++) {
+
+					var id = mix.getElementsByTagName("id")[0].childNodes[0].nodeValue;
+					var url = mix.getElementsByTagName("restful-url")[0].childNodes[0].nodeValue;
+
+    					var mixDiv = $("<div/>", {"class": "mix"});
+    					var mixName = $("<div/>", {"class": "mixName"});
+    					var mixPub = $("<div/>", {"class": "mixPub"});
+    					var mixDesc = $("<div/>", {"class": "mixDesc"});
+    					var mixTags = $("<div/>", {"class": "mixTags"});
+					var playbackOptions = $("<div/>", {"class": "playbackOptions"});
+					var playerDiv = $("<div/>", {"id": "mixPlayer_" + id, "class": "mixPlayer"});
+					var openInNewPageDiv = $("<div/>", {"id": "openInNewPageDiv_" + id, "class": "openInNewPageDiv"});
+
+    					mixName.text(getElementText(mix, "name"));
+    					mixPub.text(getElementText(mix, "first-published-at").replace("T", " ").replace("Z", " GMT") + " by " + getElementText(mix, "login"));
+    					mixDesc.text(getElementText(mix, "description"));
+    					mixTags.text(getElementText(mix, "tag-list-cache"));
+					playbackOptions.html("Open mix <a href=\"#\" id=\"openHere_" + id + "\" title=\"Open mix in this popup\">here</a> or <a id=\"openInTab_" + id + "\" href=\"" + url + "\" title=\"Open mix in a new tab (so that you can carry on listening while working!)\">in a new tab</a>");
+					openInNewPageDiv.html("Note: Playback will stop as soon as you click away from this popup. To carry on listening to the mix while you are working, open it in either <a id=\"openInTab_" + id + "\" href=\"" + url + "\" title=\"Open mix in a new tab\">a new tab</a> or <a id=\"openInWindow_" + id + "\" href=\"" + url + "\" title=\"Open mix in a new window\">a new window</a>.");
+					var imgSrc = getElementText(mix, "sq56");
+					if (imgSrc.indexOf("http") != 0) {
+						imgSrc = "http://8tracks.com" + imgSrc;
+					}
+					var img = $("<img src=\"" + imgSrc + "\" class=\"mixThumbnail\"/>");
+    					$("#mixes").append(mixDiv);
+
+					mixDiv.append(img);
+					mixDiv.append(mixName);
+					mixDiv.append(mixDesc);
+					mixDiv.append(mixPub);
+					mixDiv.append(mixTags);
+					mixDiv.append(playbackOptions);
+					mixDiv.append(playerDiv);
+					mixDiv.append(openInNewPageDiv);
+
+					$("a#openHere_" + id).click(function(e) {
+						var idFromLink = this.id.substring(this.id.indexOf("_") + 1);
+						displayMixPlayer(idFromLink);
+						e.preventDefault();
+					});
+					$("a#openInTab_" + id).click(function(e) {
+						openUrlInBgTab($(this).attr("href"));
+						e.preventDefault();
+					});
+					$("a#openInWindow_" + id).click(function(e) {
+						openUrlInNewWindow($(this).attr("href"));
+						e.preventDefault();
+					});
+
+					numberOfMixesDisplayed++;
+  				}
+
+				if (numberOfMixesDisplayed < totalEntries) {
+					$("#mixes").append(seeMoreDiv);
+					seeMoreDiv.click(function(e) {
+						getMixes(currentSearchParams, currentPage + 1);
+						e.preventDefault();
+					});
+				}
+			}
+			function getElementText(element, tagName) {
+				var matches = element.getElementsByTagName(tagName);
+				if (matches.length > 0) {
+					var nodes = matches[0].childNodes;
+					if (nodes.length > 0) {
+						return nodes[0].nodeValue;
+					}
+				}
+				return "";
+			}
+			function displayMixPlayer(id) {
+
+				if (currentMixId == id) {
+					return;
+				}
+
+				if (currentMixId != null) {
+					$("#mixPlayer_" + currentMixId).html("");
+					$("#openInNewPageDiv_" + currentMixId).hide();
+				}
+				var so = new SWFObject("http://8tracks.com/mixes/" + id + "/player_v2", "mixplayer_" + id, "100%", "120", "8", "#000000");
+   				so.write("mixPlayer_" + id);
+				$("#openInNewPageDiv_" + id).show();
+				currentMixId = id;
+			}
+			$(document).ready(init);
+		</script>
+	</head>
+	<body>
+		<div id="header">
+			<div id="logo"><img src="logo.gif" width="167" height="37" alt="logo"/></div>
+			<div id="search">
+				<div id="searchIn">Search for mixes:</div>
+				<div id="searchForm">
+					<form>
+						<div>
+							<input type="text" id="searchBox" value="" />
+						</div>
+						<div>
+							<select id="sortBy">
+								<option value="recent">sort by Recent</option>
+								<option value="popular">sort by Popular</option>
+								<option value="random">sort by Random</option>
+							</select>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div id="results">
+			<div id="refresh"><a href="#" title="See latest mixes">See latest mixes</a></div>
+			<div id="heading"></div>
+			<div id="mixes"></div>
+		</div>
+		<div id="footer">
+			Created by See Wah Cheng |
+			Twitter: <a id="myTwitter" href="#" title="My Twitter profile">@seewahcheng</a> |
+			8tracks: <a id="my8tracks" href="#" title="My 8tracks profile">seewah</a>
+		</div>
+	</body>
+</html>
