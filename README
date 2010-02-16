@@ -1,0 +1,20 @@
+== 8tracks Boombox Google Chrome Extension
+ 
+An unofficial 8tracks http://www.8tracks.com Chrome extension to let you search and play 8tracks mixes within the extension itself or in new tabs.
+ 
+== Installation
+ 
+The extension can be installed in the standard way from 
+https://chrome.google.com/extensions/detail/pmdfenjjbfliihnjlcpifgaaehankhnj
+ 
+== Usage
+ 
+Use the search box in the top right corner to search 8tracks. 
+
+Unfortunately, mix playback inside the extension popup is limited by the fact that a Chrome extension popup closes as soon as you click away from it. So click on open mix "in a new tab" instead once you have chosen a mix and would like to listen to it in the background.
+ 
+== Bugs, Issues & Feature Requests
+ 
+Add a comment: https://chrome.google.com/extensions/detail/pmdfenjjbfliihnjlcpifgaaehankhnj 
+or send me a tweet: http://twitter.com/seewahcheng
+ 
