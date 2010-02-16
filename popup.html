@@ -144,20 +144,30 @@
 		<script type="text/javascript" src="jquery-1.4.1.min.js"></script>
 		<script type="text/javascript">
 
+			/**
+			 * HTML5 local storage keys
+			 */
 			var LOCAL_STORAGE_KEY_SEARCH_STRING = "8tracksSearchString";
 			var LOCAL_STORAGE_KEY_SORT_BY = "8tracksSearchSortBy";
 
 			var req = new XMLHttpRequest();
 			var searchDefaultText = "by tag, artist or DJ";
-			var currentMixId = null;
 			var headingLatest = "Latest mixes from <a href=\"#\" title=\"Open 8tracks.com in a new tab\">8tracks</a>";
 			var headingSearchResults = "Search results from <a href=\"#\" title=\"Open 8tracks.com in a new tab\">8tracks</a>";
 			var spinningPic = $("<img src=\"working.gif\"/>");
 			var seeMoreDiv = $("<div id=\"more\"><a href=\"\" title=\"See more...\">See more...</a></div>");
+			
+			/**
+			 * State info
+			 */
 			var currentPage = 1;
 			var currentSearchParams = "";
 			var numberOfMixesDisplayed = 0;
+			var currentMixId = null;
 
+			/**
+			 * To call on load
+			 */
 			function init() {
 
 				$("#searchBox").val(searchDefaultText);
@@ -213,25 +223,40 @@
 				}
 			}
 
+			/**
+			 * Opens url in a new unselected tab.
+			 */
 			function openUrlInBgTab(url) {
 				chrome.tabs.create({"url": url, "selected": false});
 			}
 
+			/**
+			 * Opens url in a new browser window.
+			 */
 			function openUrlInNewWindow(url) {
 				chrome.windows.create({"url": url});
 			}
 
+			/**
+			 * Resets search panel display.
+			 */
 			function resetSearchPanel() {
 				$("#searchBox").val(searchDefaultText);
 				$("#sortBy").val("recent");
 			}
 
+			/**
+			 * Clear results (removing currently displayed mixes)
+			 */
 			function clearResults() {
 				$("#mixes").html("");
 				numberOfMixesDisplayed = 0;
 				currentMixId = null;
 			}
 
+			/**
+			 * Gets mix info from 8tracks API. Calls showResults to display actual mix info.
+			 */
 			function getMixes(searchParams, page) {
 				currentPage = page;
 				currentSearchParams = searchParams;
@@ -248,6 +273,9 @@
 				req.send(null);
 			}
 
+			/**
+			 * Displays the actual mix info as returned by the AJAX call.
+			 */
 			function showResults() {
 
 				$(spinningPic).remove();
@@ -316,6 +344,10 @@
 					});
 				}
 			}
+
+			/**
+			 * Convenient method for getting XML text node values.
+			 */
 			function getElementText(element, tagName) {
 				var matches = element.getElementsByTagName(tagName);
 				if (matches.length > 0) {
@@ -326,6 +358,10 @@
 				}
 				return "";
 			}
+
+			/**
+			 * Displays the 8tracks player in the popup itself.
+			 */
 			function displayMixPlayer(id) {
 
 				if (currentMixId == id) {
@@ -341,6 +377,7 @@
 				$("#openInNewPageDiv_" + id).show();
 				currentMixId = id;
 			}
+
 			$(document).ready(init);
 		</script>
 	</head>
