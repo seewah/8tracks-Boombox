@@ -78,6 +78,9 @@
 				font-size: 22px;
 				font-weight: bold;
 			}
+			#heading img {
+				margin-right: 5px;
+			}
 			#mixes {
 				margin-top: 10px;
 			}
@@ -144,16 +147,12 @@
 		<script type="text/javascript" src="jquery-1.4.1.min.js"></script>
 		<script type="text/javascript">
 
-			/**
-			 * HTML5 local storage keys
-			 */
-			var LOCAL_STORAGE_KEY_SEARCH_STRING = "8tracksSearchString";
-			var LOCAL_STORAGE_KEY_SORT_BY = "8tracksSearchSortBy";
+			var bg = chrome.extension.getBackgroundPage();
 
 			var req = new XMLHttpRequest();
 			var searchDefaultText = "by tag, artist or DJ";
 			var headingLatest = "Latest mixes from <a href=\"#\" title=\"Open 8tracks.com in a new tab\">8tracks</a>";
-			var headingSearchResults = "Search results from <a href=\"#\" title=\"Open 8tracks.com in a new tab\">8tracks</a>";
+			var headingSearchResults = "<img src=\"search.png\"/>Results from <a href=\"#\" title=\"Open 8tracks.com in a new tab\">8tracks</a>";
 			var spinningPic = $("<img src=\"working.gif\"/>");
 			var seeMoreDiv = $("<div id=\"more\"><a href=\"\" title=\"See more...\">See more...</a></div>");
 			
@@ -186,8 +185,7 @@
 					if (searchString != "" && searchString != searchDefaultText) {
 						clearResults();
 						var sortBy = $("#sortBy").val();
-						localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING] = searchString;
-						localStorage[LOCAL_STORAGE_KEY_SORT_BY] = sortBy;
+						bg.saveState({"searchString": searchString, "sortBy": sortBy});
 						getMixes("q=" + encodeURIComponent(searchString) + "&sort=" + sortBy, 1);
 					}
 					e.preventDefault();
@@ -198,8 +196,7 @@
 				$("#refresh a").click(function(e) {
 					resetSearchPanel();
 					clearResults();
-					delete localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING];
-					delete localStorage[LOCAL_STORAGE_KEY_SORT_BY];
+					bg.saveState({"searchString": null, "sortBy": null});
 					getMixes("", 1);
 					e.preventDefault();				
 				});
@@ -212,13 +209,11 @@
 					e.preventDefault();
 				});
 				
-				if (localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING] == undefined || localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING] == "") {
+				if (bg.searchString == null || bg.sortBy == null) {
 					getMixes("", 1);
 				} else {
-					$("#searchBox").val(localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING]);
-					if (localStorage[LOCAL_STORAGE_KEY_SORT_BY] != undefined && localStorage[LOCAL_STORAGE_KEY_SORT_BY] != "") {
-						$("#sortBy").val(localStorage[LOCAL_STORAGE_KEY_SORT_BY]);
-					}
+					$("#searchBox").val(bg.searchString);
+					$("#sortBy").val(bg.sortBy);
 					$("#searchForm form").submit();
 				}
 			}
@@ -373,7 +368,8 @@
 					$("#openInNewPageDiv_" + currentMixId).hide();
 				}
 				var so = new SWFObject("http://8tracks.com/mixes/" + id + "/player_v2", "mixplayer_" + id, "100%", "120", "8", "#000000");
-   				so.write("mixPlayer_" + id);
+   				so.addVariable("auto_play", "true");
+				so.write("mixPlayer_" + id);
 				$("#openInNewPageDiv_" + id).show();
 				currentMixId = id;
 			}
