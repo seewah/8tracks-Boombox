@@ -1,0 +1,81 @@
+<html>
+	<head>
+		<script type="text/javascript" src="swfobject.js"></script>
+		<script type="text/javascript">
+
+			/**
+			 * HTML5 local storage keys
+			 */
+			var LOCAL_STORAGE_KEY_SEARCH_STRING = "8tracksSearchString";
+			var LOCAL_STORAGE_KEY_SORT_BY = "8tracksSearchSortBy";
+			var LOCAL_STORAGE_TO_REMEMBER_LAST_SEARCH = "8tracksSearchToRememberLastSearch";
+
+			var toRememberLastSearch;			
+
+			/**
+			 * State variables
+			 */
+			var searchString = null;
+			var sortBy = null;
+
+			/**
+			 * Saves state into localStorage and updates local vars.
+			 */
+			function saveState(state) {
+
+				searchString = state.searchString;
+				sortBy = state.sortBy;
+
+				if (!toRememberLastSearch || searchString == null || searchString == "" || sortBy == null || sortBy == "") {
+					sortBy = null;
+					searchString = null;
+					delete localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING];
+					delete localStorage[LOCAL_STORAGE_KEY_SORT_BY];
+				} else {
+					localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING] = searchString;
+					localStorage[LOCAL_STORAGE_KEY_SORT_BY] = sortBy;
+				}
+			}
+
+			/**
+			 * Saves settings into localStorage and then reload settings.
+			 */
+			function saveSettings(settings) {
+				localStorage[LOCAL_STORAGE_TO_REMEMBER_LAST_SEARCH] = settings.toRememberLastSearch;
+				loadSettings();
+			}
+
+			/**
+			 * Loads state from localStorage and update local vars.
+			 */
+			function loadState() {
+
+				searchString = localStorage[LOCAL_STORAGE_KEY_SEARCH_STRING];
+				if (searchString == undefined || searchString == "") {
+					searchString = null;
+				}
+
+				sortBy = localStorage[LOCAL_STORAGE_KEY_SORT_BY];
+				if (sortBy == undefined || sortBy == "") {
+					sortBy = null;
+				}				
+			}
+
+			/**
+			 * Loads settings
+			 */
+			function loadSettings() {
+				toRememberLastSearch = localStorage[LOCAL_STORAGE_TO_REMEMBER_LAST_SEARCH] != "0";
+				if (!toRememberLastSearch) {
+					saveState({"searchString": null, "sortBy": null});
+				}
+			}
+
+			loadState();
+		</script>
+	</head>
+	<body>
+		<div id="bgMixPlayer">
+		</div>
+	</body>
+</html>

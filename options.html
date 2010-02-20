@@ -1,0 +1,65 @@
+<html>
+	<head>
+		<style type="text/css">
+			body {
+				font-family: helvetica, arial, sans-serif;
+				font-size: 12px;
+			}
+			#settings {
+				margin-top: 18px;
+				font-weight: bold;
+				font-size: 14px;
+				margin-bottom: 10px;
+			}
+			#toRememberChkBox {
+				float: left;
+			}
+			#toRemember {
+				padding-top: 2px;
+			}
+			#saveBtn {
+				margin-top: 15px;
+				clear: left;
+			}
+			#saved {
+				margin-top: 5px;
+				display: none;
+			}
+		</style>
+		<script type="text/javascript" src="jquery-1.4.1.min.js"></script>
+		<script type="text/javascript">
+
+			var bg = chrome.extension.getBackgroundPage();
+
+			/**
+			 * Saves settings.
+			 */
+			function saveSettings() {
+				bg.saveSettings({"toRememberLastSearch": ($("#toRememberChkBox").attr("checked") ? "1" : "0")});
+			}
+
+			$(document).ready(function() {
+				
+				$("#toRememberChkBox").click(function() {
+					$("#saved").hide();
+				});
+
+				$("#saveBtn input").click(function() {
+					$("#saved").hide();
+					saveSettings();
+					$("#saved").fadeIn("slow");
+				});
+
+				$("#toRememberChkBox").attr("checked", bg.toRememberLastSearch);
+			});
+		</script>
+	</head>
+	<body>
+		<div id="logo"><img src="logo.gif"/></div>
+		<div id="settings">User settings:</div>
+		<input type="checkbox" id="toRememberChkBox"/>
+		<div id="toRemember">Remember last search</div>
+		<div id="saveBtn"><input type="button" value="Save"/></div>
+		<div id="saved">Setting saved</div>
+	</body>
+</html>
