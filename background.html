@@ -17,6 +17,8 @@
 			 */
 			var searchString = null;
 			var sortBy = null;
+			
+			var mixPlaying = false;
 
 			/**
 			 * Saves state into localStorage and updates local vars. If toRememberLastSearch is false, clear state stored in localStorage.
@@ -71,7 +73,27 @@
 				}
 			}
 
+			/**
+			 * Plays mix in this DOM document.
+			 */
+			function playMix(id) {
+				var so = new SWFObject("http://8tracks.com/mixes/" + id + "/player_v2", "mixplayer_" + id, "100%", "120", "8", "#000000");
+   				so.addVariable("auto_play", "true");
+				so.write("bgMixPlayer");
+				mixPlaying = true;
+			}
+
+			/**
+			 * Stops the current mix playing in the background, killing the flash object.
+			 */
+			function stopMix() {
+				document.getElementById("bgMixPlayer").innerHTML = "";
+				mixPlaying = false;
+			}
+
 			loadState();
+			loadSettings();
+
 		</script>
 	</head>
 	<body>

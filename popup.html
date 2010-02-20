@@ -60,6 +60,14 @@
 				width: 104px;
 				font-size: 11px;
 			}
+			#mixPlayingInBg {
+				display: none;
+				padding: 5px;
+				margin-top: 10px;
+				border: 1px solid black;
+				width: 265px;
+				background: #f1f2a0;
+			}
 			#results {
 				padding-top: 10px;
 				clear: both;
@@ -124,10 +132,17 @@
 				padding-top: 1px;
 				background: url("listen.png") no-repeat;
 			}
+			.open8tracksPage {
+				margin-left: 62px;
+				margin-bottom: 2px;
+				clear: left;
+				padding-left: 22px;
+				background: url("newtab.png") no-repeat;
+			}
 			.mixPlayer {
 				padding-top: 5px;
 			}
-			.openInNewPageDiv {
+			.carryOnDiv{
 				padding: 5px;
 				padding-bottom: 0px;
 				display: none;
@@ -162,7 +177,7 @@
 			var currentPage = 1;
 			var currentSearchParams = "";
 			var numberOfMixesDisplayed = 0;
-			var currentMixId = null;
+			var currentFgMixId = null;
 
 			/**
 			 * To call on load
@@ -208,6 +223,14 @@
 					openUrlInBgTab("http://8tracks.com/seewah");
 					e.preventDefault();
 				});
+				$("#mixPlayingInBg a").click(function(e) {
+					stopMixInBg();
+					e.preventDefault();
+				});
+
+				if (bg.mixPlaying) {
+					$("#mixPlayingInBg").show();
+				}
 				
 				if (bg.searchString == null || bg.sortBy == null) {
 					getMixes("", 1);
@@ -246,7 +269,7 @@
 			function clearResults() {
 				$("#mixes").html("");
 				numberOfMixesDisplayed = 0;
-				currentMixId = null;
+				currentFgMixId = null;
 			}
 
 			/**
@@ -288,43 +311,57 @@
     					var mixPub = $("<div/>", {"class": "mixPub"});
     					var mixDesc = $("<div/>", {"class": "mixDesc"});
     					var mixTags = $("<div/>", {"class": "mixTags"});
+    					var open8tracksPage = $("<div/>", {"class": "open8tracksPage"});
 					var playbackOptions = $("<div/>", {"class": "playbackOptions"});
 					var playerDiv = $("<div/>", {"id": "mixPlayer_" + id, "class": "mixPlayer"});
-					var openInNewPageDiv = $("<div/>", {"id": "openInNewPageDiv_" + id, "class": "openInNewPageDiv"});
+					var carryOnDiv= $("<div/>", {"id": "carryOnDiv_" + id, "class": "carryOnDiv"});
 
     					mixName.text(getElementText(mix, "name"));
+    					open8tracksPage.text("Open 8tracks page");
     					mixPub.text(getElementText(mix, "first-published-at").replace("T", " ").replace("Z", " GMT") + " by " + getElementText(mix, "login"));
     					mixDesc.text(getElementText(mix, "description"));
     					mixTags.text(getElementText(mix, "tag-list-cache"));
-					playbackOptions.html("Open mix <a href=\"#\" id=\"openHere_" + id + "\" title=\"Open mix in this popup\">here</a> or <a id=\"openInTab_" + id + "\" href=\"" + url + "\" title=\"Open mix in a new tab (so that you can carry on listening while working!)\">in a new tab</a>");
-					openInNewPageDiv.html("Note: Playback will stop as soon as you click away from this popup. To carry on listening to the mix while you are working, open it in either <a id=\"openInTab_" + id + "\" href=\"" + url + "\" title=\"Open mix in a new tab\">a new tab</a> or <a id=\"openInWindow_" + id + "\" href=\"" + url + "\" title=\"Open mix in a new window\">a new window</a>.");
+
+					open8tracksPage.html("Open page <a id=\"open8tracksPageLink_" + id + "\" href=\"" + url + "\" title=\"Open page in a new tab\">in a new tab</a>");
+
+					playbackOptions.html("Play mix <a href=\"#\" id=\"playHere_" + id + "\" title=\"Play mix in this popup\">here</a> or <a id=\"playInBg_" + id + "\" href=\"#\" title=\"Play mix in the background (so that you can carry on listening while working!)\">in the background</a>");
+
+					carryOnDiv.html("Note: Playback will stop as soon as you click away from this popup. To carry on listening to the mix while you are working, play mix <a id=\"carryOn_" + id + "\" href=\"#\" title=\"Play mix in the background (so that you can carry on listening while working!)\">in the background</a>.");
+
 					var imgSrc = getElementText(mix, "sq56");
 					if (imgSrc.indexOf("http") != 0) {
 						imgSrc = "http://8tracks.com" + imgSrc;
 					}
 					var img = $("<img src=\"" + imgSrc + "\" class=\"mixThumbnail\"/>");
-    					$("#mixes").append(mixDiv);
 
+    					$("#mixes").append(mixDiv);
 					mixDiv.append(img);
 					mixDiv.append(mixName);
 					mixDiv.append(mixDesc);
 					mixDiv.append(mixPub);
 					mixDiv.append(mixTags);
+					mixDiv.append(open8tracksPage);
 					mixDiv.append(playbackOptions);
 					mixDiv.append(playerDiv);
-					mixDiv.append(openInNewPageDiv);
+					mixDiv.append(carryOnDiv);
 
-					$("a#openHere_" + id).click(function(e) {
+					$("a#open8tracksPageLink_" + id).click(function(e) {
+						openUrlInBgTab($(this).attr("href"));
+						e.preventDefault();
+					});
+					$("a#playHere_" + id).click(function(e) {
 						var idFromLink = this.id.substring(this.id.indexOf("_") + 1);
 						displayMixPlayer(idFromLink);
 						e.preventDefault();
 					});
-					$("a#openInTab_" + id).click(function(e) {
-						openUrlInBgTab($(this).attr("href"));
+					$("a#playInBg_" + id).click(function(e) {
+						var idFromLink = this.id.substring(this.id.indexOf("_") + 1);
+						playMixInBg(idFromLink);
 						e.preventDefault();
 					});
-					$("a#openInWindow_" + id).click(function(e) {
-						openUrlInNewWindow($(this).attr("href"));
+					$("a#carryOn_" + id).click(function(e) {
+						var idFromLink = this.id.substring(this.id.indexOf("_") + 1);
+						playMixInBg(idFromLink);
 						e.preventDefault();
 					});
 
@@ -359,19 +396,47 @@
 			 */
 			function displayMixPlayer(id) {
 
-				if (currentMixId == id) {
+				if (currentFgMixId == id) {
 					return;
 				}
 
-				if (currentMixId != null) {
-					$("#mixPlayer_" + currentMixId).html("");
-					$("#openInNewPageDiv_" + currentMixId).hide();
-				}
+				stopMixInBg();
+
+				hideCurrentFgMixPlayer();
 				var so = new SWFObject("http://8tracks.com/mixes/" + id + "/player_v2", "mixplayer_" + id, "100%", "120", "8", "#000000");
    				so.addVariable("auto_play", "true");
 				so.write("mixPlayer_" + id);
-				$("#openInNewPageDiv_" + id).show();
-				currentMixId = id;
+				$("#carryOnDiv_" + id).show();
+				currentFgMixId = id;
+			}
+
+			/**
+			 * Hides the current 8tracks player in the popup, destroying the flash object.
+			 */
+			function hideCurrentFgMixPlayer() {
+				if (currentFgMixId != null) {
+					$("#mixPlayer_" + currentFgMixId).html("");
+					$("#carryOnDiv_" + currentFgMixId).hide();
+				}
+			}
+
+			/**
+ 			 * Plays mix in background.html, showing mix playing message.
+			 */
+			function playMixInBg(id) {
+				hideCurrentFgMixPlayer();
+				bg.playMix(id);
+				chrome.browserAction.setBadgeText({"text": "."});
+				$("#mixPlayingInBg").fadeOut("slow");
+			}
+			
+			/**
+			 * Stops mix in the background.html, hiding mix playing message.
+			 */
+			function stopMixInBg() {
+				bg.stopMix();
+				chrome.browserAction.setBadgeText({"text": ""});
+				$("#mixPlayingInBg").fadeOut("slow");
 			}
 
 			$(document).ready(init);
@@ -398,6 +463,7 @@
 				</div>
 			</div>
 		</div>
+		<div id="mixPlayingInBg">A mix is currently playing in the background: <a href="#" title="Stop mix in the background">STOP MIX</a></div>
 		<div id="results">
 			<div id="refresh"><a href="#" title="See latest mixes">See latest mixes</a></div>
 			<div id="heading"></div>
