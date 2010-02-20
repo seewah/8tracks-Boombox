@@ -230,6 +230,8 @@
 
 				if (bg.mixPlaying) {
 					$("#mixPlayingInBg").show();
+				} else {
+					chrome.browserAction.setBadgeText({"text": ""});
 				}
 				
 				if (bg.searchString == null || bg.sortBy == null) {
@@ -440,6 +442,7 @@
 			}
 
 			$(document).ready(init);
+
 		</script>
 	</head>
 	<body>
