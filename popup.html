@@ -290,7 +290,7 @@
 				req.open("GET", "http://api.8tracks.com/mixes.xml?page=" + page + "&" + searchParams, true);
 				req.setRequestHeader("Authorization", "Basic S1BGUmZuQmJYQ0FKWUlhOmZlNDI2MzZjZThhMDkxNjYwN2QxYTg0MDc1YTNiZjc1MmFkNTZjMjU=");
 				req.onload = showResults;
-				// following to a hack to get around the chrome extension async xhr bug
+				// following a hack to get around the chrome extension async xhr bug
 				setTimeout(function() {
 					req.send(null);
 				}, 0);
