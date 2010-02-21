@@ -6,3 +6,7 @@
 
 * options (Options.html) to specify whether to automatically save the last search
 * allows playback "in the background" (i.e. now possible to listen to mixes while working!)
+
+1.1.5 (Feb 21, 2010)
+
+* putting async XHR call inside a setTimeout (a hack to get around a Chrome extension framework). This should make the extension appear to load faster.
