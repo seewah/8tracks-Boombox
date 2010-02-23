@@ -65,7 +65,7 @@
 				padding: 5px;
 				margin-top: 10px;
 				border: 1px solid black;
-				width: 265px;
+				width: 356px;
 				background: #f1f2a0;
 			}
 			#results {
@@ -223,8 +223,12 @@
 					openUrlInBgTab("http://8tracks.com/seewah");
 					e.preventDefault();
 				});
-				$("#mixPlayingInBg a").click(function(e) {
+				$("#mixPlayingInBg a#stopMix").click(function(e) {
 					stopMixInBg();
+					e.preventDefault();
+				});
+				$("#mixPlayingInBg a#openMixPage").click(function(e) {
+					openUrlInBgTab(bg.mixPageUrl);
 					e.preventDefault();
 				});
 
@@ -469,7 +473,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="mixPlayingInBg">A mix is currently playing in the background: <a href="#" title="Stop mix in the background">STOP MIX</a></div>
+		<div id="mixPlayingInBg">A mix is currently playing in the background:&nbsp;<a id="stopMix" href="#" title="Stop mix in the background">STOP MIX</a>&nbsp;|&nbsp;<a id="openMixPage" href="#" title="Open mix page in a new tab">SEE MIX DETAILS</a></div>
 		<div id="results">
 			<div id="refresh"><a href="#" title="See latest mixes">See latest mixes</a></div>
 			<div id="heading"></div>

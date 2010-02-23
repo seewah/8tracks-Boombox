@@ -10,3 +10,7 @@
 1.1.5 (Feb 21, 2010)
 
 * putting async XHR call inside a setTimeout (a hack to get around a Chrome extension framework). This should make the extension appear to load faster.
+
+1.1.6 (Feb 22, 2010)
+
+* added "SEE MIX DETAILS" to over details page for the mix playing in the background
